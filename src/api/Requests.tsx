@@ -19,15 +19,18 @@ async function fetchData<T>(extendURL: string) {
         });
 }
 
-export async function Get<T>(extendURL: string): Promise<T> {
+export async function Get<T>(extendURL: string): Promise<T | undefined> {
     await fetchData<T>(extendURL);
     if (data) {
         return data as T;
     }
-    return undefined as T;
+    return undefined;
 }
 
-export async function Post<T>(extendURL: string, data: T): Promise<boolean> {
+export async function Post<T>(
+    extendURL: string,
+    data: T
+): Promise<boolean | undefined> {
     try {
         await axios.post(`${API_URL}${extendURL}`, data).then((response) => {
             if (response.status === 201) {
@@ -39,10 +42,13 @@ export async function Post<T>(extendURL: string, data: T): Promise<boolean> {
         console.log(error);
         return false;
     }
-    return undefined as unknown as boolean;
+    return undefined;
 }
 
-export async function Put<T>(extendURL: string, data: T): Promise<Boolean> {
+export async function Put<T>(
+    extendURL: string,
+    data: T
+): Promise<Boolean | undefined> {
     try {
         await axios.put(`${API_URL}${extendURL}`, data).then((response) => {
             if (response.status === 200) {
@@ -55,10 +61,10 @@ export async function Put<T>(extendURL: string, data: T): Promise<Boolean> {
         return false;
     }
 
-    return undefined as unknown as boolean;
+    return undefined;
 }
 
-export async function Delete(extendURL: string): Promise<Boolean> {
+export async function Delete(extendURL: string): Promise<Boolean | undefined> {
     try {
         await axios.delete(`${API_URL}${extendURL}`).then((response) => {
             if (response.status === 200) {
@@ -71,5 +77,5 @@ export async function Delete(extendURL: string): Promise<Boolean> {
         return false;
     }
 
-    return undefined as unknown as boolean;
+    return undefined;
 }

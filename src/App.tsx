@@ -5,7 +5,7 @@ import { TodoProps } from "./types";
 function App() {
     const [data, setData] = useState<TodoProps>();
     const getData = async () => {
-        let newData: TodoProps;
+        let newData: TodoProps | undefined;
         newData = await Get<TodoProps>("todos/1");
         setData(newData);
         console.log(newData);
