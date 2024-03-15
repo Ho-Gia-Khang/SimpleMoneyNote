@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Get } from "./api/Requests";
 import { TodoProps } from "./types";
 
