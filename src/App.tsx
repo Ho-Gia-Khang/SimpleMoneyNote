@@ -1,21 +1,15 @@
 import { useState } from "react";
 import { Get } from "./api/Requests";
-import { TodoProps } from "./types";
+import BookLayout from "./components/ui/layout/BookLayout";
+import LeftPage from "./components/functional/LeftPage";
+import RightPage from "./components/functional/RightPage";
 
 function App() {
-    const [data, setData] = useState<TodoProps>();
-    const getData = async () => {
-        let newData: TodoProps | undefined;
-        newData = await Get<TodoProps>("todos/1");
-        setData(newData);
-        console.log(newData);
-        console.log(data);
-    };
-
     return (
-        <main>
-            <button onClick={getData}>Get Data</button>
-        </main>
+        <BookLayout
+            leftPage={<LeftPage />}
+            rightPage={<RightPage />}
+        ></BookLayout>
     );
 }
 
