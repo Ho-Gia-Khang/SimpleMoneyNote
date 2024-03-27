@@ -1,6 +1,7 @@
 import React, { ReactNode } from "react";
-import Header from "./Header";
-import Footer from "./Footer";
+import BookCover from "../../functional/BookCover";
+import NotePage from "src/pages/NotePage";
+import NoteEditingPage from "src/pages/NoteEditingPage";
 
 const BookLayout = ({
     leftPage,
@@ -12,14 +13,16 @@ const BookLayout = ({
     children?: ReactNode;
 }) => {
     return (
-        <main>
-            <Header />
-            <div className="page-layout">
-                <div className="left-page">{leftPage}</div>
-                <div className="right-page">{rightPage}</div>
+        <main className="flex flex-col items-center justify-end w-screen h-screen">
+            <div className="w-[80%] h-[80%] mb-2 flex justify-between">
+                <BookCover front>
+                    <NotePage />
+                </BookCover>
+                <BookCover>
+                    <NoteEditingPage />
+                </BookCover>
             </div>
             <div>{children}</div>
-            <Footer />
         </main>
     );
 };

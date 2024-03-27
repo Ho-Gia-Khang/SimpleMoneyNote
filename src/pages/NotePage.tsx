@@ -1,9 +1,9 @@
 import React from "react";
-import SinglePage from "./SinglePage";
+import SinglePage from "../components/functional/SinglePage";
 import { useNoteNavigation } from "src/stores/NavigationStore";
-import BookMark from "./BookMark";
+import BookMark from "../components/functional/BookMark";
 
-const LeftPage = () => {
+const NotePage = () => {
     const noteNavigation = useNoteNavigation((state) => state.Notechecked);
     const setNoteVavigation = useNoteNavigation(
         (state) => state.setNoteChecked
@@ -18,10 +18,10 @@ const LeftPage = () => {
                 checkedEvent={() => setNoteVavigation(true)}
             />
             <SinglePage>
-                <div>Left Page</div>
+                <div>Note Page</div>
             </SinglePage>
         </div>
     );
 };
 
-export default LeftPage;
+export default NotePage;
