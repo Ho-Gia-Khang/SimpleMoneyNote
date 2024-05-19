@@ -1,6 +1,8 @@
 import axios from "axios";
 import { headers } from "./Headers";
+import dotenv from "dotenv";
 
+dotenv.config();
 const API_URL = process.env.REACT_APP_API_URL;
 
 let data: any = {};

@@ -1,14 +1,7 @@
-import BookLayout from "./components/ui/layout/BookLayout";
-import LeftPage from "./components/functional/LeftPage";
-import RightPage from "./components/functional/RightPage";
+import Book from "./components/ui/layout/Book";
 
 function App() {
-    return (
-        <BookLayout
-            leftPage={<LeftPage />}
-            rightPage={<RightPage />}
-        ></BookLayout>
-    );
+    return <Book></Book>;
 }
 
 export default App;
