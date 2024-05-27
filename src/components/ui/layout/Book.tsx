@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import BookCover from "./BookCover";
 import Note from "src/pages/Note";
 import NoteEditing from "src/pages/NoteEditing";
@@ -15,11 +15,13 @@ import {
     useNoteNavigation,
     useWalletNavigation,
 } from "src/stores/NavigationStore";
-import AppSetting from "src/pages/AppSetting";
+import Setting from "src/pages/Setting";
 import LastPage from "./LastPage";
 import About from "src/pages/About";
+import { BookProps, NoteInfoProps } from "src/types";
+import { Get } from "src/api/Requests";
 
-const Book = () => {
+const Book = ({ book }: { book?: BookProps }) => {
     // general navigation
     const currentLocation = useNavigation((state) => state.currentLocation);
     const setCurrentLocation = useNavigation(
@@ -43,6 +45,28 @@ const Book = () => {
         (state) => state.setNoteChecked
     );
     const [walletPageZIndex, setWalletPageZIndex] = useState<number>(20);
+
+    const [notes, setNotes] = useState<NoteInfoProps[]>([]);
+
+    const [bookName, setBookname] = useState<String>("");
+
+    const fetchNote = useCallback(async () => {
+        if (!book) return;
+        const noteLists = await Get<NoteInfoProps[]>(`note/getAll/${book.id}`);
+
+        if (!noteLists) return;
+        setNotes(noteLists);
+    }, [book]);
+
+    useEffect(() => {
+        if (book) {
+            setBookname(book.name);
+        }
+    }, [book]);
+
+    useEffect(() => {
+        fetchNote();
+    }, [fetchNote]);
 
     const goNextPage = () => {
         if (currentLocation < maxLocation) {
@@ -88,11 +112,8 @@ const Book = () => {
                 </Button>
 
                 <BookCover>
-                    <LastPage>
-                        <About />
-                    </LastPage>
                     <FirstPage>
-                        <Note />
+                        <Note notes={notes} bookName={bookName} />
                     </FirstPage>
                     <Paper z={notePageZIndex}>
                         <FrontPage flipped={noteNavigation}>
@@ -107,9 +128,12 @@ const Book = () => {
                             <WalletEditing />
                         </FrontPage>
                         <BackPage flipped={walletNavigation}>
-                            <AppSetting />
+                            <Setting />
                         </BackPage>
                     </Paper>
+                    <LastPage>
+                        <About />
+                    </LastPage>
                 </BookCover>
 
                 <Button variant={"ghost"} onClick={goNextPage}>

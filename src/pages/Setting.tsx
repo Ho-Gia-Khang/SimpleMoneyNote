@@ -1,15 +1,16 @@
 import React from "react";
 import SinglePage from "src/components/ui/layout/SinglePage";
+import Login from "../components/functional/Login";
 import { useLogin } from "src/stores/LoginStore";
-import LoginReminder from "src/components/ui/layout/LoginReminder";
+import AppSettings from "src/components/functional/AppSettings";
 
-const NoteEditing = () => {
+const Setting = () => {
     const isLoggedIn = useLogin((state) => state.isLoggedIn);
     return (
-        <SinglePage>
-            {isLoggedIn ? <div>Note editing page</div> : <LoginReminder />}
+        <SinglePage isBack>
+            {isLoggedIn ? <AppSettings /> : <Login />}
         </SinglePage>
     );
 };
 
-export default NoteEditing;
+export default Setting;

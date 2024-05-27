@@ -1,64 +1,69 @@
 {
-  "name": "front-end",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@emotion/react": "^11.11.4",
-    "@emotion/styled": "^11.11.5",
-    "@mui/icons-material": "^5.15.14",
-    "@mui/material": "^5.15.14",
-    "@radix-ui/react-popover": "^1.0.7",
-    "@radix-ui/react-slot": "^1.0.2",
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.83",
-    "@types/react": "^18.2.59",
-    "@types/react-dom": "^18.2.19",
-    "axios": "^1.6.7",
-    "class-variance-authority": "^0.7.0",
-    "clsx": "^2.1.0",
-    "date-fns": "^3.5.0",
-    "dotenv": "^16.4.5",
-    "lucide-react": "^0.344.0",
-    "react": "^18.2.0",
-    "react-day-picker": "^8.10.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "tailwind-merge": "^2.2.1",
-    "typescript": "^4.9.5",
-    "web-vitals": "^2.1.4",
-    "zustand": "^4.5.2"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@types/dotenv": "^8.2.0",
-    "tailwindcss": "^3.4.1",
-    "tailwindcss-3d": "^1.0.6"
-  }
+    "name": "front-end",
+    "version": "0.1.0",
+    "private": true,
+    "dependencies": {
+        "@emotion/react": "^11.11.4",
+        "@emotion/styled": "^11.11.5",
+        "@hookform/resolvers": "^3.4.2",
+        "@mui/icons-material": "^5.15.14",
+        "@mui/material": "^5.15.14",
+        "@radix-ui/react-label": "^2.0.2",
+        "@radix-ui/react-popover": "^1.0.7",
+        "@radix-ui/react-separator": "^1.0.3",
+        "@radix-ui/react-slot": "^1.0.2",
+        "@testing-library/jest-dom": "^5.17.0",
+        "@testing-library/react": "^13.4.0",
+        "@testing-library/user-event": "^13.5.0",
+        "@types/jest": "^27.5.2",
+        "@types/node": "^16.18.83",
+        "@types/react": "^18.2.59",
+        "@types/react-dom": "^18.2.19",
+        "axios": "^1.6.7",
+        "class-variance-authority": "^0.7.0",
+        "clsx": "^2.1.0",
+        "date-fns": "^3.5.0",
+        "dotenv": "^16.4.5",
+        "lucide-react": "^0.344.0",
+        "react": "^18.2.0",
+        "react-day-picker": "^8.10.0",
+        "react-dom": "^18.2.0",
+        "react-hook-form": "^7.51.4",
+        "react-scripts": "5.0.1",
+        "tailwind-merge": "^2.2.1",
+        "typescript": "^4.9.5",
+        "web-vitals": "^2.1.4",
+        "zod": "^3.23.8",
+        "zustand": "^4.5.2"
+    },
+    "scripts": {
+        "dev": "react-scripts start",
+        "build": "react-scripts build",
+        "test": "react-scripts test",
+        "eject": "react-scripts eject"
+    },
+    "eslintConfig": {
+        "extends": [
+            "react-app",
+            "react-app/jest"
+        ]
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    },
+    "devDependencies": {
+        "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+        "@types/dotenv": "^8.2.0",
+        "tailwindcss": "^3.4.1",
+        "tailwindcss-3d": "^1.0.6"
+    }
 }

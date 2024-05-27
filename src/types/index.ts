@@ -1,3 +1,8 @@
+export interface LoginProps {
+    email: string;
+    password: string;
+}
+
 export interface UserProps {
     id: string;
     email: string;
@@ -6,6 +11,12 @@ export interface UserProps {
     };
     createdAt?: Date;
     updatedAt?: Date;
+}
+
+export interface BookProps {
+    id: string;
+    userId: UserProps["id"];
+    name: String;
 }
 
 export interface WalletProps {
@@ -37,6 +48,8 @@ export interface NoteProps {
     date: Date;
     description?: String;
     category: String;
+    currency: String;
+    bookId: BookProps["id"];
     walletId?: WalletProps["id"];
     createdAt?: Date;
     updatedAt?: Date;
@@ -48,5 +61,5 @@ export interface NoteInfoProps {
     amount: NoteProps["amount"];
     date: NoteProps["date"];
     category: NoteProps["category"];
-    desciption: NoteProps["description"];
+    desciption?: NoteProps["description"];
 }
