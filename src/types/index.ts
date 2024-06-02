@@ -16,17 +16,17 @@ export interface UserProps {
 export interface BookProps {
     id: string;
     userId: UserProps["id"];
-    name: String;
+    name: string;
 }
 
 export interface WalletProps {
     id: string;
     userId: UserProps["id"];
-    name: String;
+    name: string;
     balance: number;
-    currency: String;
-    icon: String;
-    theme: String;
+    currency: string;
+    icon: string;
+    theme: string;
     interest?: number;
     note?: NoteProps;
     createdAt?: Date;
@@ -43,12 +43,12 @@ export interface NoteProps {
     id: string;
     userId: UserProps["id"];
     type: "expense" | "income";
-    theme: String;
-    amount: Number;
+    theme: string;
+    amount: number;
     date: Date;
-    description?: String;
-    category: String;
-    currency: String;
+    descriptions?: string;
+    categoryId: string;
+    currency: string;
     bookId: BookProps["id"];
     walletId?: WalletProps["id"];
     createdAt?: Date;
@@ -60,6 +60,16 @@ export interface NoteInfoProps {
     type: NoteProps["type"];
     amount: NoteProps["amount"];
     date: NoteProps["date"];
-    category: NoteProps["category"];
-    desciption?: NoteProps["description"];
+    currency: NoteProps["currency"];
+    categoryId: NoteProps["categoryId"];
+    descriptions?: NoteProps["descriptions"];
+}
+
+export interface CategoryProps {
+    id: string;
+    name: string;
+    userId: UserProps["id"];
+    type: "expense" | "income";
+    theme: string;
+    icon: string;
 }

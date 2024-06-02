@@ -21,7 +21,13 @@ import About from "src/pages/About";
 import { BookProps, NoteInfoProps } from "src/types";
 import { Get } from "src/api/Requests";
 
-const Book = ({ book }: { book?: BookProps }) => {
+const Book = ({
+    book,
+    allBookNames,
+}: {
+    book?: BookProps;
+    allBookNames?: string[];
+}) => {
     // general navigation
     const currentLocation = useNavigation((state) => state.currentLocation);
     const setCurrentLocation = useNavigation(
@@ -48,21 +54,21 @@ const Book = ({ book }: { book?: BookProps }) => {
 
     const [notes, setNotes] = useState<NoteInfoProps[]>([]);
 
-    const [bookName, setBookname] = useState<String>("");
+    const [bookNames, setBookNames] = useState<string[]>([]);
 
     const fetchNote = useCallback(async () => {
         if (!book) return;
         const noteLists = await Get<NoteInfoProps[]>(`note/getAll/${book.id}`);
 
-        if (!noteLists) return;
+        if (!noteLists || noteLists.length === 0) return;
         setNotes(noteLists);
     }, [book]);
 
     useEffect(() => {
-        if (book) {
-            setBookname(book.name);
+        if (allBookNames) {
+            setBookNames(allBookNames);
         }
-    }, [book]);
+    }, [allBookNames]);
 
     useEffect(() => {
         fetchNote();
@@ -113,7 +119,7 @@ const Book = ({ book }: { book?: BookProps }) => {
 
                 <BookCover>
                     <FirstPage>
-                        <Note notes={notes} bookName={bookName} />
+                        <Note notes={notes} bookNames={bookNames} />
                     </FirstPage>
                     <Paper z={notePageZIndex}>
                         <FrontPage flipped={noteNavigation}>

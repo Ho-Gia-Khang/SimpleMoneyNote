@@ -1,12 +1,24 @@
 import Book from "./components/ui/layout/Book";
-import { useState, useEffect, useCallback } from "react";
-import { BookProps } from "./types";
+import { useEffect, useCallback } from "react";
+import { BookProps, CategoryProps, WalletInfoProps } from "./types";
 import { Get } from "./api/Requests";
 import { useLogin } from "./stores/LoginStore";
+import { useBookNavigation } from "./stores/NavigationStore";
+import { useCategory } from "./stores/CategoryStore";
+import { useWalletInfo } from "./stores/WalletStore";
 
 function App() {
-    const [books, setBooks] = useState<BookProps[]>([]);
-    const isLoggedIn = useLogin((state) => state.isLoggedIn);
+    const books: BookProps[] = useBookNavigation((state) => state.allBooks);
+    const isLoggedIn: boolean = useLogin((state) => state.isLoggedIn);
+    const allBookNames: string[] = books.map((book) => book.name);
+    const currentBook: BookProps = useBookNavigation(
+        (state) => state.currentBook
+    );
+
+    const setBooks = useBookNavigation((state) => state.setAllBooks);
+    const setCurrentBook = useBookNavigation((state) => state.setCurrentBook);
+    const setCategories = useCategory((state) => state.setCategories);
+    const setWalletInfos = useWalletInfo((state) => state.setWalletInfos);
 
     const fetchBooks = useCallback(async () => {
         await Get<BookProps[]>("book/getAll").then((res) => {
@@ -20,23 +32,57 @@ function App() {
             }
             if (!books || books.length === 0) {
                 setBooks(res);
+                setCurrentBook(res[0]);
             }
         });
-    }, [books]);
+    }, [books, setBooks, setCurrentBook]);
+
+    const fetchCategories = useCallback(async () => {
+        if (!isLoggedIn) return;
+
+        const categoriesList = await Get<CategoryProps[]>("category/getAll");
+        if (!categoriesList) {
+            console.error("Failed to fetch categories");
+            return;
+        }
+
+        setCategories(categoriesList);
+    }, [isLoggedIn, setCategories]);
+
+    const fetchWalletInfos = useCallback(async () => {
+        if (!isLoggedIn) return;
+
+        const walletInfos = await Get<WalletInfoProps[]>("wallet/getAll");
+        if (!walletInfos) {
+            console.error("Failed to fetch wallet infos");
+            return;
+        }
+        setWalletInfos(walletInfos);
+    }, [isLoggedIn, setWalletInfos]);
+
+    useEffect(() => {
+        fetchCategories();
+    }, [fetchCategories, isLoggedIn]);
 
     useEffect(() => {
         fetchBooks();
     }, [fetchBooks, isLoggedIn]);
 
+    useEffect(() => {
+        fetchWalletInfos();
+    }, [fetchWalletInfos, isLoggedIn]);
+
     if (!isLoggedIn) {
         return <Book></Book>;
     }
 
-    console.log(books);
-
     return (
         <>
-            {books.length === 0 ? <Book></Book> : <Book book={books[0]}></Book>}
+            {books.length === 0 ? (
+                <Book></Book>
+            ) : (
+                <Book book={currentBook} allBookNames={allBookNames}></Book>
+            )}
         </>
     );
 }
