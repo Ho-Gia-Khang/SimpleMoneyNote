@@ -29,7 +29,7 @@ const DatePicker = ({
                         !date && "text-muted-foreground"
                     )}
                 >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    <CalendarIcon className="mr-2 h-4 w-4 text-black" />
                     {date ? (
                         monthSelect ? (
                             format(date, "MMM yyyy")
@@ -39,12 +39,19 @@ const DatePicker = ({
                             format(date, "PPP")
                         )
                     ) : (
-                        <span>{displayDate ? displayDate : "Pick a date"}</span>
+                        <span className="text-black">
+                            {displayDate ? displayDate : "Pick a date"}
+                        </span>
                     )}
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
-                <Calendar mode="single" selected={date} onSelect={setDate} />
+                <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    captionLayout="dropdown-buttons"
+                />
             </PopoverContent>
         </Popover>
     );

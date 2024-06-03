@@ -14,7 +14,7 @@ import {
     SelectValue,
 } from "../ui/select";
 import Delete from "@mui/icons-material/Delete";
-import { NoteProps } from "src/types";
+import { NoteProps, WalletProps } from "src/types";
 import { useNote } from "src/stores/NoteStore";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -37,10 +37,18 @@ const NoteForm = ({ noteDetail }: { noteDetail: NoteProps | undefined }) => {
           (new Date().getMonth() + 1).toString();
 
     const walletInfos = useWalletInfo((state) => state.walletInfos);
+    const [currentWallet, setCurrentWallet] = useState<WalletProps>(
+        {} as WalletProps
+    );
+    const [prevWallet, setPrevWallet] = useState<WalletProps>(
+        {} as WalletProps
+    );
 
     const noteEditingSchema = z.object({
         type: z.string(),
-        amount: z.number(),
+        amount: z.number().nonnegative({
+            message: "Amount must be a positive number",
+        }),
         currency: z.string(),
         descriptions: z.string(),
         date: z.date(),
@@ -83,7 +91,12 @@ const NoteForm = ({ noteDetail }: { noteDetail: NoteProps | undefined }) => {
                 <div className="flex justify-evenly">
                     <Button
                         variant={"outline"}
-                        className="bg-transparent border border-black"
+                        className={
+                            "border border-black hover:bg-black hover:text-white" +
+                            (currentType === "expense"
+                                ? " bg-black text-white"
+                                : " bg-transparent")
+                        }
                         onClick={() => {
                             setCurrentType("expense");
                         }}
@@ -92,7 +105,12 @@ const NoteForm = ({ noteDetail }: { noteDetail: NoteProps | undefined }) => {
                     </Button>
                     <Button
                         variant={"outline"}
-                        className="bg-transparent border border-black"
+                        className={
+                            "border border-black hover:bg-black hover:text-white" +
+                            (currentType === "income"
+                                ? " bg-black text-white"
+                                : " bg-transparent")
+                        }
                         onClick={() => {
                             setCurrentType("income");
                         }}
@@ -144,13 +162,25 @@ const NoteForm = ({ noteDetail }: { noteDetail: NoteProps | undefined }) => {
                                     <FormControl>
                                         <Select onValueChange={field.onChange}>
                                             <SelectTrigger className="bg-transparent border border-black">
-                                                <SelectValue placeholder="Wallet" />
+                                                <SelectValue
+                                                    placeholder={
+                                                        noteDetail
+                                                            ? noteDetail.walletId
+                                                            : "Wallet"
+                                                    }
+                                                />
                                             </SelectTrigger>
                                             <SelectContent className="bg-[#E8DCB8] border border-black text-center">
                                                 <SelectGroup>
                                                     <SelectLabel>
                                                         Wallets
                                                     </SelectLabel>
+                                                    <SelectItem
+                                                        value="none"
+                                                        className="border border-black"
+                                                    >
+                                                        None
+                                                    </SelectItem>
                                                     {walletInfos.map(
                                                         (wallet) => (
                                                             <SelectItem
@@ -158,6 +188,7 @@ const NoteForm = ({ noteDetail }: { noteDetail: NoteProps | undefined }) => {
                                                                 value={
                                                                     wallet.id
                                                                 }
+                                                                className="border border-black"
                                                             >
                                                                 {wallet.name}
                                                             </SelectItem>
@@ -199,7 +230,13 @@ const NoteForm = ({ noteDetail }: { noteDetail: NoteProps | undefined }) => {
                                     </FormItem>
                                 )}
                             />
-                            <Button>Category</Button>
+                            <Button
+                                type="button"
+                                variant={"outline"}
+                                className="bg-transparent border border-black cursor-default hover:bg-transparent"
+                            >
+                                Category
+                            </Button>
                         </div>
 
                         <FormField
@@ -222,11 +259,12 @@ const NoteForm = ({ noteDetail }: { noteDetail: NoteProps | undefined }) => {
                         control={noteEditingForm.control}
                         name="categoryId"
                         render={({ field }) => (
-                            <FormItem>
+                            <FormItem className="w-full h-full">
                                 <FormControl>
                                     <CategoryList
                                         currentType={currentType}
                                         onValueChange={field.onChange}
+                                        defaultCategory={noteDetail?.categoryId}
                                     />
                                 </FormControl>
                             </FormItem>
