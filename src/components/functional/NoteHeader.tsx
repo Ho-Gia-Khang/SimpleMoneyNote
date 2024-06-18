@@ -11,6 +11,19 @@ import {
 import { useBookNavigation } from "src/stores/NavigationStore";
 import DatePicker from "../ui/datePicker";
 import { useNote } from "src/stores/NoteStore";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "../ui/dialog";
+import { Button } from "../ui/button";
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
+import { Post } from "src/api/Requests";
+import { BookProps } from "src/types";
 
 const NoteHeader = ({
     bookNames,
@@ -24,6 +37,7 @@ const NoteHeader = ({
     total: number;
 }) => {
     const [date, setDate] = React.useState<Date>();
+    const [isDialogOpen, setIsDialogOpen] = React.useState(false);
     const currentDate: string = date
         ? (new Date(date).getMonth() + 1).toString() +
           "/" +
@@ -32,9 +46,21 @@ const NoteHeader = ({
           "/" +
           new Date().getFullYear().toString();
     const allBooks = useBookNavigation((state) => state.allBooks);
+    const setAllBooks = useBookNavigation((state) => state.setAllBooks);
     const setCurrentBook = useBookNavigation((state) => state.setCurrentBook);
     const currentBook = useBookNavigation((state) => state.currentBook);
     const setQueryMonth = useNote((state) => state.setQueryMonth);
+    const [newBookName, setNewBookName] = React.useState("");
+
+    const createBook = React.useCallback(async (bookName: string) => {
+        const newBook = await Post<BookProps>("book/create", {
+            name: bookName,
+        });
+        if (newBook) {
+            setAllBooks([...allBooks, newBook]);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         if (date) {
@@ -69,15 +95,16 @@ const NoteHeader = ({
                     displayDate={currentDate}
                     monthSelect
                 />
+
                 <Select
                     onValueChange={(e) => {
-                        if (e === "+") {
-                            console.log("Add new book");
-                        } else {
+                        if (e !== "+") {
                             const newBook = allBooks.find(
                                 (book) => book.name === e
                             );
                             setCurrentBook(newBook!);
+                        } else {
+                            setIsDialogOpen(true);
                         }
                     }}
                 >
@@ -96,15 +123,55 @@ const NoteHeader = ({
                                     {name}
                                 </SelectItem>
                             ))}
+
+                            {/* <DialogTrigger asChild> */}
                             <SelectItem
                                 className="border-y-2 border-x-2 border-black"
                                 value="+"
                             >
                                 +
                             </SelectItem>
+                            {/* </DialogTrigger> */}
                         </SelectGroup>
                     </SelectContent>
                 </Select>
+                <Dialog
+                    open={isDialogOpen}
+                    onOpenChange={() => {
+                        setIsDialogOpen(false);
+                    }}
+                >
+                    <DialogContent className="bg-[#E8DCB8]">
+                        <DialogHeader>
+                            <DialogTitle>Create a new Book</DialogTitle>
+                        </DialogHeader>
+                        <div className="grid flex-1 gap-2">
+                            <Label htmlFor="link" className="">
+                                Book name
+                            </Label>
+                            <Input
+                                id="link"
+                                className="bg-transparent border border-black"
+                                onBlur={(e) => {
+                                    setNewBookName(e.target.value);
+                                }}
+                            />
+                        </div>
+                        <DialogFooter>
+                            <Button
+                                type={"submit"}
+                                variant={"outline"}
+                                className="bg-transparent border border-black"
+                                onClick={() => {
+                                    createBook(newBookName);
+                                    setIsDialogOpen(false);
+                                }}
+                            >
+                                Create
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </div>
     );

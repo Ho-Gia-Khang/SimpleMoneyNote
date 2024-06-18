@@ -80,7 +80,6 @@ const Note = ({
 
     useEffect(() => {
         filterNotes();
-        console.log("selected month: ", selectedMonth);
     }, [filterNotes, selectedMonth]);
 
     return (
