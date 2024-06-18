@@ -46,7 +46,7 @@ export interface NoteProps {
     theme: string;
     amount: number;
     date: Date;
-    descriptions?: string;
+    description?: string;
     categoryId: string;
     currency: string;
     bookId: BookProps["id"];
@@ -62,7 +62,7 @@ export interface NoteInfoProps {
     date: NoteProps["date"];
     currency: NoteProps["currency"];
     categoryId: NoteProps["categoryId"];
-    descriptions?: NoteProps["descriptions"];
+    description?: NoteProps["description"];
 }
 
 export interface CategoryProps {

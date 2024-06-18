@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Form, FormControl, FormField, FormItem } from "../ui/form";
 import { Textarea } from "../ui/textarea";
 import CategoryList from "./CategoryList";
@@ -22,9 +22,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "../ui/input";
 import CloseIcon from "@mui/icons-material/Close";
 import { useWalletInfo } from "src/stores/WalletStore";
+import { Get, Post, Put } from "src/api/Requests";
+import { useBookNavigation } from "src/stores/NavigationStore";
 
-const NoteForm = ({ noteDetail }: { noteDetail: NoteProps | undefined }) => {
+const NoteForm = ({ noteDetail }: { noteDetail?: NoteProps | undefined }) => {
     const setIsEditingNote = useNote((state) => state.setIsEditingNote);
+    const setIsCreatingNote = useNote((state) => state.setIsCreatingNote);
     const [currentType, setCurrentType] = useState<
         "income" | "expense" | undefined
     >(noteDetail ? noteDetail.type : "expense");
@@ -37,12 +40,36 @@ const NoteForm = ({ noteDetail }: { noteDetail: NoteProps | undefined }) => {
           (new Date().getMonth() + 1).toString();
 
     const walletInfos = useWalletInfo((state) => state.walletInfos);
-    const [currentWallet, setCurrentWallet] = useState<WalletProps>(
-        {} as WalletProps
-    );
-    const [prevWallet, setPrevWallet] = useState<WalletProps>(
-        {} as WalletProps
-    );
+    const [currentWallet, setCurrentWallet] = useState<WalletProps>();
+    const [prevWallet, setPrevWallet] = useState<WalletProps>();
+
+    const currentBook = useBookNavigation((state) => state.currentBook);
+
+    // re-render the component when the note is edited
+    const hasEditedNote = useNote((state) => state.hasEditedNote);
+    const setHasEditedNote = useNote((state) => state.setHasEditedNote);
+
+    const fetchWallet = useCallback(async (walletId: string) => {
+        const wallet = await Get<WalletProps>(`wallet/getOne/${walletId}`);
+
+        if (!wallet) {
+            console.error("Failed to fetch wallet");
+            return;
+        }
+        setCurrentWallet(wallet);
+    }, []);
+
+    useEffect(() => {
+        if (noteDetail && noteDetail.walletId) {
+            fetchWallet(noteDetail.walletId);
+        }
+    }, [fetchWallet, noteDetail]);
+
+    useEffect(() => {
+        if (!prevWallet) {
+            setPrevWallet(currentWallet);
+        }
+    }, [currentWallet, prevWallet]);
 
     const noteEditingSchema = z.object({
         type: z.string(),
@@ -50,7 +77,7 @@ const NoteForm = ({ noteDetail }: { noteDetail: NoteProps | undefined }) => {
             message: "Amount must be a positive number",
         }),
         currency: z.string(),
-        descriptions: z.string(),
+        description: z.string(),
         date: z.date(),
         categoryId: z.string(),
         walletId: z.string(),
@@ -63,28 +90,80 @@ const NoteForm = ({ noteDetail }: { noteDetail: NoteProps | undefined }) => {
             type: noteDetail ? noteDetail.type : "expense",
             amount: noteDetail ? noteDetail.amount : 0,
             currency: noteDetail ? noteDetail.currency : "VND",
-            descriptions: noteDetail ? noteDetail.descriptions : "",
+            description: noteDetail ? noteDetail.description : "",
             date: noteDetail ? noteDetail.date : new Date(),
             categoryId: noteDetail?.categoryId,
-            walletId: noteDetail?.walletId,
+            walletId: noteDetail ? noteDetail.walletId : "",
             theme: noteDetail?.theme,
         },
     });
 
-    const onSubmit = (data: z.infer<typeof noteEditingSchema>) => {
+    const onSubmit = async (data: z.infer<typeof noteEditingSchema>) => {
+        setPrevWallet(currentWallet);
+        await fetchWallet(data.walletId);
         let edittedNote: Omit<NoteProps, "userId" | "id" | "bookId"> = {
             type: currentType ? currentType : "expense",
-            amount: data.amount,
+            amount: JSON.parse(data.amount.toString()),
             currency: data.currency,
-            descriptions: data.descriptions,
-            date: data.date,
+            description: data.description,
+            date: new Date(data.date),
             categoryId: data.categoryId,
             walletId: data.walletId,
             theme: data.theme,
         };
 
         console.log(edittedNote);
+
+        if (noteDetail) {
+            const newNote = await Put<NoteProps>(
+                `note/update/${noteDetail.id}`,
+                edittedNote
+            );
+            console.log(newNote);
+        } else {
+            const bookId = currentBook.id;
+            const newNote = await Post<NoteProps>(
+                `note/create/${bookId}`,
+                edittedNote
+            );
+            console.log(newNote);
+        }
+
+        if (currentWallet) {
+            const updatedCurrentWallet: WalletProps = {
+                ...currentWallet,
+                balance:
+                    currentType === "income"
+                        ? currentWallet.balance + edittedNote.amount
+                        : currentWallet.balance - edittedNote.amount,
+            };
+            if (currentWallet !== prevWallet && prevWallet) {
+                await Put<WalletProps>(
+                    `wallet/update/${currentWallet.id}`,
+                    updatedCurrentWallet
+                );
+
+                const updatedPrevWallet: WalletProps = {
+                    ...prevWallet,
+                    balance:
+                        currentType === "income"
+                            ? prevWallet.balance - edittedNote.amount
+                            : prevWallet.balance + edittedNote.amount,
+                };
+                await Put<WalletProps>(
+                    `wallet/update/${prevWallet.id}`,
+                    updatedPrevWallet
+                );
+            } else {
+                await Put<WalletProps>(
+                    `wallet/update/${currentWallet.id}`,
+                    updatedCurrentWallet
+                );
+            }
+        }
+        setHasEditedNote(!hasEditedNote);
     };
+
     return (
         <div className="ml-[5%] flex flex-col justify-center pt-4 border border-black rounded-3xl h-[60%] w-[90%] bg-transparent">
             <div className="w-full grid grid-cols-2">
@@ -126,6 +205,7 @@ const NoteForm = ({ noteDetail }: { noteDetail: NoteProps | undefined }) => {
                         variant={"ghost"}
                         onClick={() => {
                             setIsEditingNote(false);
+                            setIsCreatingNote(false);
                         }}
                     >
                         <CloseIcon />
@@ -137,12 +217,12 @@ const NoteForm = ({ noteDetail }: { noteDetail: NoteProps | undefined }) => {
                     onSubmit={noteEditingForm.handleSubmit(onSubmit)}
                     className="w-[95%] h-full flex flex-col items-center gap-2"
                 >
-                    <div className="grid grid-cols-6">
+                    <div className="grid grid-cols-6 w-full">
                         <FormField
                             control={noteEditingForm.control}
                             name="amount"
                             render={({ field }) => (
-                                <FormItem className="col-span-4">
+                                <FormItem className="col-span-3 w-full">
                                     <FormControl>
                                         <Input
                                             type="number"
@@ -158,14 +238,14 @@ const NoteForm = ({ noteDetail }: { noteDetail: NoteProps | undefined }) => {
                             control={noteEditingForm.control}
                             name="walletId"
                             render={({ field }) => (
-                                <FormItem>
+                                <FormItem className="col-span-2">
                                     <FormControl>
                                         <Select onValueChange={field.onChange}>
                                             <SelectTrigger className="bg-transparent border border-black">
                                                 <SelectValue
                                                     placeholder={
-                                                        noteDetail
-                                                            ? noteDetail.walletId
+                                                        currentWallet
+                                                            ? currentWallet.name
                                                             : "Wallet"
                                                     }
                                                 />
@@ -204,7 +284,7 @@ const NoteForm = ({ noteDetail }: { noteDetail: NoteProps | undefined }) => {
                         <Button
                             type="button"
                             variant={"outline"}
-                            className="bg-transparent border border-black"
+                            className="bg-transparent border border-black col-span-1"
                             onClick={() => {
                                 onSubmit(noteEditingForm.getValues());
                             }}
@@ -241,7 +321,7 @@ const NoteForm = ({ noteDetail }: { noteDetail: NoteProps | undefined }) => {
 
                         <FormField
                             control={noteEditingForm.control}
-                            name="descriptions"
+                            name="description"
                             render={({ field }) => (
                                 <FormItem className="col-span-5">
                                     <FormControl>

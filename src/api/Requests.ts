@@ -77,7 +77,7 @@ export async function logout(): Promise<number | undefined> {
 
 export async function Post<T>(
     extendURL: string,
-    data: T
+    data: Partial<T>
 ): Promise<T | undefined> {
     let newData: T | undefined = undefined;
     try {
@@ -95,14 +95,14 @@ export async function Post<T>(
     return newData;
 }
 
-export async function Put<T>(extendURL: string, data: T) {
+export async function Put<T>(extendURL: string, data: Partial<T>) {
     let newData: T | undefined = undefined;
     try {
         await axios
             .put(`${API_URL}${extendURL}`, data, { headers: { ...headers } })
             .then((response) => {
                 if (response.status === 200) {
-                    console.log("Put successful");
+                    console.log(response.data);
                     newData = response.data as T;
                 }
             });

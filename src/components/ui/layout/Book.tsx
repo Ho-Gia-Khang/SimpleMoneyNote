@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import BookCover from "./BookCover";
 import Note from "src/pages/Note";
 import NoteEditing from "src/pages/NoteEditing";
@@ -18,8 +18,7 @@ import {
 import Setting from "src/pages/Setting";
 import LastPage from "./LastPage";
 import About from "src/pages/About";
-import { BookProps, NoteInfoProps } from "src/types";
-import { Get } from "src/api/Requests";
+import { BookProps } from "src/types";
 
 const Book = ({
     book,
@@ -52,27 +51,13 @@ const Book = ({
     );
     const [walletPageZIndex, setWalletPageZIndex] = useState<number>(20);
 
-    const [notes, setNotes] = useState<NoteInfoProps[]>([]);
-
     const [bookNames, setBookNames] = useState<string[]>([]);
-
-    const fetchNote = useCallback(async () => {
-        if (!book) return;
-        const noteLists = await Get<NoteInfoProps[]>(`note/getAll/${book.id}`);
-
-        if (!noteLists || noteLists.length === 0) return;
-        setNotes(noteLists);
-    }, [book]);
 
     useEffect(() => {
         if (allBookNames) {
             setBookNames(allBookNames);
         }
     }, [allBookNames]);
-
-    useEffect(() => {
-        fetchNote();
-    }, [fetchNote]);
 
     const goNextPage = () => {
         if (currentLocation < maxLocation) {
@@ -119,7 +104,7 @@ const Book = ({
 
                 <BookCover>
                     <FirstPage>
-                        <Note notes={notes} bookNames={bookNames} />
+                        <Note bookId={book?.id} bookNames={bookNames} />
                     </FirstPage>
                     <Paper z={notePageZIndex}>
                         <FrontPage flipped={noteNavigation}>

@@ -1,11 +1,12 @@
 import Book from "./components/ui/layout/Book";
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { BookProps, CategoryProps, WalletInfoProps } from "./types";
 import { Get } from "./api/Requests";
 import { useLogin } from "./stores/LoginStore";
 import { useBookNavigation } from "./stores/NavigationStore";
 import { useCategory } from "./stores/CategoryStore";
 import { useWalletInfo } from "./stores/WalletStore";
+import { useNote } from "./stores/NoteStore";
 
 function App() {
     const books: BookProps[] = useBookNavigation((state) => state.allBooks);
@@ -14,6 +15,7 @@ function App() {
     const currentBook: BookProps = useBookNavigation(
         (state) => state.currentBook
     );
+    const [isInitizalizing, setIsInitializing] = useState<boolean>(true);
 
     const setBooks = useBookNavigation((state) => state.setAllBooks);
     const setCurrentBook = useBookNavigation((state) => state.setCurrentBook);
@@ -60,6 +62,8 @@ function App() {
         setWalletInfos(walletInfos);
     }, [isLoggedIn, setWalletInfos]);
 
+    const setQueryMonth = useNote((state) => state.setQueryMonth);
+
     useEffect(() => {
         fetchCategories();
     }, [fetchCategories, isLoggedIn]);
@@ -71,6 +75,12 @@ function App() {
     useEffect(() => {
         fetchWalletInfos();
     }, [fetchWalletInfos, isLoggedIn]);
+
+    useEffect(() => {
+        setQueryMonth(new Date().getMonth());
+        setIsInitializing(false);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isInitizalizing]);
 
     if (!isLoggedIn) {
         return <Book></Book>;

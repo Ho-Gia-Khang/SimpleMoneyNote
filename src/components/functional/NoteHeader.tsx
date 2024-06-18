@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
     Select,
     SelectContent,
@@ -10,6 +10,7 @@ import {
 } from "../ui/select";
 import { useBookNavigation } from "src/stores/NavigationStore";
 import DatePicker from "../ui/datePicker";
+import { useNote } from "src/stores/NoteStore";
 
 const NoteHeader = ({
     bookNames,
@@ -33,6 +34,13 @@ const NoteHeader = ({
     const allBooks = useBookNavigation((state) => state.allBooks);
     const setCurrentBook = useBookNavigation((state) => state.setCurrentBook);
     const currentBook = useBookNavigation((state) => state.currentBook);
+    const setQueryMonth = useNote((state) => state.setQueryMonth);
+
+    useEffect(() => {
+        if (date) {
+            setQueryMonth(date.getMonth());
+        }
+    }, [date, setQueryMonth]);
 
     return (
         <div className="grid grid-cols-2 w-full h-[20%]">
@@ -61,7 +69,18 @@ const NoteHeader = ({
                     displayDate={currentDate}
                     monthSelect
                 />
-                <Select>
+                <Select
+                    onValueChange={(e) => {
+                        if (e === "+") {
+                            console.log("Add new book");
+                        } else {
+                            const newBook = allBooks.find(
+                                (book) => book.name === e
+                            );
+                            setCurrentBook(newBook!);
+                        }
+                    }}
+                >
                     <SelectTrigger className="bg-transparent border border-black">
                         <SelectValue placeholder={currentBook.name} />
                     </SelectTrigger>
@@ -73,10 +92,6 @@ const NoteHeader = ({
                                     key={index}
                                     value={name}
                                     className="border-t-2 border-x-2 border-black"
-                                    onChange={() => {
-                                        console.log("Book changed");
-                                        setCurrentBook(allBooks[index]);
-                                    }}
                                 >
                                     {name}
                                 </SelectItem>
