@@ -35,7 +35,6 @@ const SingleWallet = ({ walletId }: { walletId: string }) => {
                 className="h-full col-span-10 bg-transparent border-black border justify-start place-content-center p-0"
                 variant={"outline"}
                 onClick={() => {
-                    setIsEdittingWallet(false);
                     setCurrentWallet(wallet);
                     setIsEdittingWallet(true);
                 }}

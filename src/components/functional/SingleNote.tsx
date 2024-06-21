@@ -40,6 +40,7 @@ const SingleNote = ({ noteId }: { noteId: string }) => {
     const deleteNote = useCallback(async () => {
         await Delete(`note/delete/${noteId}`);
         setHasEditedNote(!hasEditedNote);
+        setIsEditingNote(false);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [noteId]);
 
@@ -64,7 +65,7 @@ const SingleNote = ({ noteId }: { noteId: string }) => {
                 <div className="col-span-8 self-center w-full h-full place-content-center text-lg">
                     <div className="h-full w-full grid grid-rows-2">
                         <p className="h-full text-center">{noteDate}</p>
-                        <p className="h-full grid grid-cols-2 text-center">
+                        <div className="h-full grid grid-cols-2 text-center">
                             <span
                                 className={
                                     note.type.includes("income")
@@ -79,7 +80,7 @@ const SingleNote = ({ noteId }: { noteId: string }) => {
                             <span>
                                 <Description content={note.description!} />
                             </span>
-                        </p>
+                        </div>
                     </div>
                 </div>
             </Button>

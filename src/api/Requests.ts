@@ -95,7 +95,10 @@ export async function Post<T>(
     return newData;
 }
 
-export async function Put<T>(extendURL: string, data: Partial<T>) {
+export async function Put<T>(
+    extendURL: string,
+    data: Partial<T>
+): Promise<T | undefined> {
     let newData: T | undefined = undefined;
     try {
         await axios

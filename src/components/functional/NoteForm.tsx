@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Form, FormControl, FormField, FormItem } from "../ui/form";
 import { Textarea } from "../ui/textarea";
 import CategoryList from "./CategoryList";
@@ -13,15 +13,15 @@ import {
     SelectTrigger,
     SelectValue,
 } from "../ui/select";
-import { NoteProps, WalletProps } from "src/types";
+import { NoteProps, WalletInfoProps, WalletProps } from "src/types";
 import { useNote } from "src/stores/NoteStore";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "../ui/input";
 import CloseIcon from "@mui/icons-material/Close";
-import { useWalletInfo } from "src/stores/WalletStore";
-import { Get, Post, Put, Delete } from "src/api/Requests";
+import { useWallet, useWalletInfo } from "src/stores/WalletStore";
+import { Post, Put, Delete } from "src/api/Requests";
 import { useBookNavigation } from "src/stores/NavigationStore";
 import DeleteIcon from "@mui/icons-material/Delete";
 
@@ -40,36 +40,38 @@ const NoteForm = ({ noteDetail }: { noteDetail?: NoteProps | undefined }) => {
           (new Date().getMonth() + 1).toString();
 
     const walletInfos = useWalletInfo((state) => state.walletInfos);
-    const [currentWallet, setCurrentWallet] = useState<WalletProps>();
-    const [prevWallet, setPrevWallet] = useState<WalletProps>();
+    const currentWalletRef = useRef<WalletInfoProps>();
+    const prevWalletRef = useRef<WalletInfoProps>();
+    const [currentWallet, setCurrentWallet] = useState<WalletInfoProps>();
 
     const currentBook = useBookNavigation((state) => state.currentBook);
 
     // re-render the component when the note is edited
     const hasEditedNote = useNote((state) => state.hasEditedNote);
+    const hasEdittedWallet = useWallet((state) => state.hasEdittedWallet);
     const setHasEditedNote = useNote((state) => state.setHasEditedNote);
+    const setHasEdittedWallet = useWallet((state) => state.setHasEdittedWallet);
+    const setCurrentNote = useNote((state) => state.setCurrentNote);
 
-    const fetchWallet = useCallback(async (walletId: string) => {
-        const wallet = await Get<WalletProps>(`wallet/getOne/${walletId}`);
-
+    const findWallet = (walletId: string) => {
+        const wallet = walletInfos.find((wallet) => wallet.id === walletId);
         if (!wallet) {
-            console.error("Failed to fetch wallet");
+            console.log("Wallet not found");
             return;
         }
-        setCurrentWallet(wallet);
-    }, []);
+        return wallet;
+    };
 
     useEffect(() => {
         if (noteDetail && noteDetail.walletId) {
-            fetchWallet(noteDetail.walletId);
+            const wallet = findWallet(noteDetail.walletId);
+            if (wallet) {
+                setCurrentWallet(wallet);
+                currentWalletRef.current = wallet;
+            }
         }
-    }, [fetchWallet, noteDetail]);
-
-    useEffect(() => {
-        if (!prevWallet) {
-            setPrevWallet(currentWallet);
-        }
-    }, [currentWallet, prevWallet]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [noteDetail]);
 
     const noteEditingSchema = z.object({
         type: z.string(),
@@ -107,8 +109,6 @@ const NoteForm = ({ noteDetail }: { noteDetail?: NoteProps | undefined }) => {
     }, [noteDetail?.id]);
 
     const onSubmit = async (data: z.infer<typeof noteEditingSchema>) => {
-        setPrevWallet(currentWallet);
-        await fetchWallet(data.walletId);
         let edittedNote: Omit<NoteProps, "userId" | "id" | "bookId"> = {
             type: currentType ? currentType : "expense",
             amount: JSON.parse(data.amount.toString()),
@@ -116,60 +116,117 @@ const NoteForm = ({ noteDetail }: { noteDetail?: NoteProps | undefined }) => {
             description: data.description,
             date: new Date(data.date),
             categoryId: data.categoryId,
-            walletId: data.walletId,
+            walletId: data.walletId === "none" ? undefined : data.walletId,
             theme: data.theme,
         };
 
         console.log(edittedNote);
 
+        // update the note details
         if (noteDetail) {
             const newNote = await Put<NoteProps>(
                 `note/update/${noteDetail.id}`,
                 edittedNote
             );
-            console.log(newNote);
+
+            if (newNote) {
+                setCurrentNote(newNote);
+            }
+            // update the wallet balance
+            prevWalletRef.current = currentWalletRef.current;
+            currentWalletRef.current = findWallet(data.walletId);
+
+            if (data.walletId === "none") {
+                if (currentWalletRef.current) {
+                    const updatedCurrentWallet: Partial<WalletProps> = {
+                        balance:
+                            currentType === "income"
+                                ? parseFloat(
+                                      currentWalletRef.current.balance.toString()
+                                  ) - parseFloat(data.amount.toString())
+                                : parseFloat(
+                                      currentWalletRef.current.balance.toString()
+                                  ) + parseFloat(data.amount.toString()),
+                    };
+                    await Put<WalletProps>(
+                        `wallet/update/${data.walletId}`,
+                        updatedCurrentWallet
+                    );
+                }
+                return;
+            }
+            if (
+                data.walletId === noteDetail?.walletId &&
+                data.amount === noteDetail?.amount
+            ) {
+                return;
+            }
+
+            console.log("prev wallet:", prevWalletRef.current);
+            console.log("current wallet:", currentWalletRef.current);
+            if (currentWalletRef.current) {
+                const updatedCurrentWallet: Partial<WalletProps> = {
+                    balance:
+                        currentType === "income"
+                            ? parseFloat(
+                                  currentWalletRef.current.balance.toString()
+                              ) + parseFloat(data.amount.toString())
+                            : parseFloat(
+                                  currentWalletRef.current.balance.toString()
+                              ) - parseFloat(data.amount.toString()),
+                };
+                await Put<WalletProps>(
+                    `wallet/update/${data.walletId}`,
+                    updatedCurrentWallet
+                );
+                if (
+                    prevWalletRef.current &&
+                    currentWalletRef.current.id !== prevWalletRef.current.id
+                ) {
+                    const updatedPrevWallet: Partial<WalletProps> = {
+                        balance:
+                            currentType === "income"
+                                ? parseFloat(
+                                      prevWalletRef.current.balance.toString()
+                                  ) - parseFloat(data.amount.toString())
+                                : parseFloat(
+                                      prevWalletRef.current.balance.toString()
+                                  ) + parseFloat(data.amount.toString()),
+                    };
+                    await Put<WalletProps>(
+                        `wallet/update/${prevWalletRef.current.id}`,
+                        updatedPrevWallet
+                    );
+                }
+            }
         } else {
             const bookId = currentBook.id;
             const newNote = await Post<NoteProps>(
                 `note/create/${bookId}`,
                 edittedNote
             );
-            console.log(newNote);
-        }
 
-        if (currentWallet) {
-            const updatedCurrentWallet: WalletProps = {
-                ...currentWallet,
-                balance:
-                    currentType === "income"
-                        ? currentWallet.balance + edittedNote.amount
-                        : currentWallet.balance - edittedNote.amount,
-            };
-            if (currentWallet !== prevWallet && prevWallet) {
-                await Put<WalletProps>(
-                    `wallet/update/${currentWallet.id}`,
-                    updatedCurrentWallet
-                );
-
-                const updatedPrevWallet: WalletProps = {
-                    ...prevWallet,
-                    balance:
-                        currentType === "income"
-                            ? prevWallet.balance - edittedNote.amount
-                            : prevWallet.balance + edittedNote.amount,
-                };
-                await Put<WalletProps>(
-                    `wallet/update/${prevWallet.id}`,
-                    updatedPrevWallet
-                );
-            } else {
-                await Put<WalletProps>(
-                    `wallet/update/${currentWallet.id}`,
-                    updatedCurrentWallet
-                );
+            if (newNote) {
+                setCurrentNote(newNote);
             }
+            const selectedWallet = findWallet(data.walletId);
+            if (!selectedWallet) return;
+            const newValue = currentType?.includes("income")
+                ? parseFloat(selectedWallet.balance.toString()) +
+                  parseFloat(data.amount.toString())
+                : parseFloat(selectedWallet.balance.toString()) -
+                  parseFloat(data.amount.toString());
+            const updatedWallet: Partial<WalletProps> = {
+                balance: newValue,
+            };
+            await Put<WalletProps>(
+                `wallet/update/${data.walletId}`,
+                updatedWallet
+            );
         }
+
         setHasEditedNote(!hasEditedNote);
+        setHasEdittedWallet(!hasEdittedWallet);
     };
 
     return (
