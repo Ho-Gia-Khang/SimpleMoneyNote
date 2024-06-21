@@ -2,8 +2,8 @@ import { create } from "zustand";
 import { WalletInfoProps, WalletProps } from "src/types";
 
 interface Wallet {
-    wallets: WalletProps[];
-    setWallets: (wallet: WalletProps[]) => void;
+    currentWallet: WalletProps;
+    setCurrentWallet: (wallet: WalletProps) => void;
 }
 
 interface WalletInfo {
@@ -12,8 +12,8 @@ interface WalletInfo {
 }
 
 export const useWallet = create<Wallet>((set) => ({
-    wallets: [],
-    setWallets: (wallets) => set({ wallets: wallets }),
+    currentWallet: {} as WalletProps,
+    setCurrentWallet: (wallet) => set({ currentWallet: wallet }),
 }));
 
 export const useWalletInfo = create<WalletInfo>((set) => ({

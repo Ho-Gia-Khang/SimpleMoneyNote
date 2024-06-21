@@ -4,12 +4,13 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { useNote } from "src/stores/NoteStore";
 import { useCategory } from "src/stores/CategoryStore";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Get } from "src/api/Requests";
+import { Delete, Get } from "src/api/Requests";
 
 const SingleNote = ({ noteId }: { noteId: string }) => {
     const [note, setNote] = useState<NoteProps>();
     // re-render the component when the note is edited
     const hasEditedNote = useNote((state) => state.hasEditedNote);
+    const setHasEditedNote = useNote((state) => state.setHasEditedNote);
 
     const fetchNote = useCallback(async () => {
         const response = await Get<NoteProps>(`note/getOne/${noteId}`);
@@ -35,10 +36,16 @@ const SingleNote = ({ noteId }: { noteId: string }) => {
         return categories.find((category) => category.id === note.categoryId);
     }, [categories, note]);
 
+    const deleteNote = useCallback(async () => {
+        await Delete(`note/delete/${noteId}`);
+        setHasEditedNote(!hasEditedNote);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [noteId]);
+
     if (!note) return <></>;
 
     return (
-        <div className="grid grid-cols-10 h-[15%]">
+        <div className="grid grid-cols-10 h-[15%] mt-2">
             <Button
                 variant={"outline"}
                 className="col-span-9 bg-transparent border-black border h-full justify-start place-content-center p-0"
@@ -53,7 +60,7 @@ const SingleNote = ({ noteId }: { noteId: string }) => {
                     src={category?.icon}
                     alt={category?.icon}
                 />
-                <div className="col-span-8 self-center w-full h-full place-content-center">
+                <div className="col-span-8 self-center w-full h-full place-content-center text-lg">
                     <div className="h-full w-full grid grid-rows-2">
                         <p className="h-full text-center">{noteDate}</p>
                         <p className="h-full grid grid-cols-2 text-center">
@@ -67,6 +74,7 @@ const SingleNote = ({ noteId }: { noteId: string }) => {
             <Button
                 variant={"outline"}
                 className="col-span-1 bg-transparent border-black border h-full"
+                onClick={deleteNote}
             >
                 <DeleteIcon />
             </Button>

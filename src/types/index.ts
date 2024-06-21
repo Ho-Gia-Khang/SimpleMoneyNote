@@ -29,14 +29,14 @@ export interface WalletProps {
     theme: string;
     interest?: number;
     note?: NoteProps;
-    createdAt?: Date;
-    updatedAt?: Date;
+    description?: string;
 }
 
 export interface WalletInfoProps {
     id: WalletProps["id"];
     name: WalletProps["name"];
     balance: WalletProps["balance"];
+    interest?: WalletProps["interest"];
 }
 
 export interface NoteProps {

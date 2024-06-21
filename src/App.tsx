@@ -7,6 +7,7 @@ import { useBookNavigation } from "./stores/NavigationStore";
 import { useCategory } from "./stores/CategoryStore";
 import { useWalletInfo } from "./stores/WalletStore";
 import { useNote } from "./stores/NoteStore";
+import { defaultSettings } from "./utils/settings";
 
 function App() {
     const books: BookProps[] = useBookNavigation((state) => state.allBooks);
@@ -86,14 +87,16 @@ function App() {
         return <Book></Book>;
     }
 
+    const backgroundColor = defaultSettings.backgroundColor;
+
     return (
-        <>
+        <div className={`bg-[${backgroundColor}]`}>
             {books.length === 0 ? (
                 <Book></Book>
             ) : (
                 <Book book={currentBook} allBookNames={allBookNames}></Book>
             )}
-        </>
+        </div>
     );
 }
 

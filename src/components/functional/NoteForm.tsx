@@ -13,7 +13,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "../ui/select";
-import Delete from "@mui/icons-material/Delete";
 import { NoteProps, WalletProps } from "src/types";
 import { useNote } from "src/stores/NoteStore";
 import { useForm } from "react-hook-form";
@@ -22,8 +21,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "../ui/input";
 import CloseIcon from "@mui/icons-material/Close";
 import { useWalletInfo } from "src/stores/WalletStore";
-import { Get, Post, Put } from "src/api/Requests";
+import { Get, Post, Put, Delete } from "src/api/Requests";
 import { useBookNavigation } from "src/stores/NavigationStore";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const NoteForm = ({ noteDetail }: { noteDetail?: NoteProps | undefined }) => {
     const setIsEditingNote = useNote((state) => state.setIsEditingNote);
@@ -97,6 +97,14 @@ const NoteForm = ({ noteDetail }: { noteDetail?: NoteProps | undefined }) => {
             theme: noteDetail?.theme,
         },
     });
+
+    const deleteNote = useCallback(async () => {
+        await Delete(`note/delete/${noteDetail?.id}`);
+        setIsEditingNote(false);
+        setIsCreatingNote(false);
+        setHasEditedNote(!hasEditedNote);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [noteDetail?.id]);
 
     const onSubmit = async (data: z.infer<typeof noteEditingSchema>) => {
         setPrevWallet(currentWallet);
@@ -198,8 +206,8 @@ const NoteForm = ({ noteDetail }: { noteDetail?: NoteProps | undefined }) => {
                     </Button>
                 </div>
                 <div className="flex justify-end">
-                    <Button variant={"ghost"}>
-                        <Delete />
+                    <Button variant={"ghost"} onClick={deleteNote}>
+                        <DeleteIcon />
                     </Button>
                     <Button
                         variant={"ghost"}
