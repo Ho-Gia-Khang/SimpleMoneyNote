@@ -14,14 +14,14 @@ const NoteEditing = () => {
     return (
         <SinglePage>
             {isLoggedIn ? (
-                <>
+                <div className="h-full py-2">
                     {isEditingNote && !isCreatingNote ? (
                         <NoteForm noteDetail={currentNote} />
                     ) : (
                         <> </>
                     )}
                     {isCreatingNote && !isEditingNote ? <NoteForm /> : <> </>}
-                </>
+                </div>
             ) : (
                 <LoginReminder />
             )}

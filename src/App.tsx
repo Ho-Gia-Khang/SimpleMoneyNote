@@ -5,7 +5,7 @@ import { Get } from "./api/Requests";
 import { useLogin } from "./stores/LoginStore";
 import { useBookNavigation } from "./stores/NavigationStore";
 import { useCategory } from "./stores/CategoryStore";
-import { useWalletInfo } from "./stores/WalletStore";
+import { useWallet, useWalletInfo } from "./stores/WalletStore";
 import { useNote } from "./stores/NoteStore";
 import { defaultSettings } from "./utils/settings";
 
@@ -62,6 +62,7 @@ function App() {
         }
         setWalletInfos(walletInfos);
     }, [isLoggedIn, setWalletInfos]);
+    const hasEdittedWallet = useWallet((state) => state.hasEdittedWallet);
 
     const setQueryMonth = useNote((state) => state.setQueryMonth);
 
@@ -75,7 +76,7 @@ function App() {
 
     useEffect(() => {
         fetchWalletInfos();
-    }, [fetchWalletInfos, isLoggedIn]);
+    }, [fetchWalletInfos, isLoggedIn, hasEdittedWallet]);
 
     useEffect(() => {
         setQueryMonth(new Date().getMonth());

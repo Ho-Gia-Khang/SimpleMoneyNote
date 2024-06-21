@@ -4,11 +4,11 @@ import { NoteInfoProps } from "src/types";
 import { useLogin } from "src/stores/LoginStore";
 import LoginReminder from "src/components/ui/layout/LoginReminder";
 import NoteHeader from "src/components/functional/NoteHeader";
-import { Separator } from "src/components/ui/separator";
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { Get } from "src/api/Requests";
 import { useNote } from "src/stores/NoteStore";
 import { Button } from "src/components/ui/button";
+import ColoredSeparator from "src/components/ui/coloredSeparator";
 
 const Note = ({
     bookId,
@@ -85,14 +85,14 @@ const Note = ({
     return (
         <SinglePage>
             {isLoggedIn ? (
-                <>
+                <div className="p-1">
                     <NoteHeader
                         bookNames={bookNames}
                         income={income}
                         expense={expense}
                         total={total}
                     />
-                    <Separator className="my-2" />
+                    <ColoredSeparator />
                     {filteredNotes?.map((note, index) => (
                         <SingleNote key={index} noteId={note.id} />
                     ))}
@@ -110,7 +110,7 @@ const Note = ({
                             height={42}
                         />
                     </Button>
-                </>
+                </div>
             ) : (
                 <LoginReminder />
             )}

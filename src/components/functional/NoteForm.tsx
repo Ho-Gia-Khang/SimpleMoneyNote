@@ -174,7 +174,7 @@ const NoteForm = ({ noteDetail }: { noteDetail?: NoteProps | undefined }) => {
 
     return (
         <div className="ml-[5%] flex flex-col justify-center pt-4 border border-black rounded-3xl h-[60%] w-[90%] bg-transparent">
-            <div className="w-full grid grid-cols-2">
+            <div className="w-full grid grid-cols-2 pb-2">
                 <div className="flex justify-evenly">
                     <Button
                         variant={"outline"}
@@ -223,7 +223,7 @@ const NoteForm = ({ noteDetail }: { noteDetail?: NoteProps | undefined }) => {
             <Form {...noteEditingForm}>
                 <form
                     onSubmit={noteEditingForm.handleSubmit(onSubmit)}
-                    className="w-[95%] h-full flex flex-col items-center gap-2"
+                    className="w-[95%] h-full self-center flex flex-col items-center gap-2"
                 >
                     <div className="grid grid-cols-6 w-full">
                         <FormField
@@ -334,7 +334,7 @@ const NoteForm = ({ noteDetail }: { noteDetail?: NoteProps | undefined }) => {
                                 <FormItem className="col-span-5">
                                     <FormControl>
                                         <Textarea
-                                            placeholder="descriptions"
+                                            placeholder="What about writing something down"
                                             className="bg-transparent border border-black w-full"
                                             {...field}
                                         />

@@ -5,6 +5,7 @@ import { useNote } from "src/stores/NoteStore";
 import { useCategory } from "src/stores/CategoryStore";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Delete, Get } from "src/api/Requests";
+import Description from "../ui/Description";
 
 const SingleNote = ({ noteId }: { noteId: string }) => {
     const [note, setNote] = useState<NoteProps>();
@@ -64,9 +65,20 @@ const SingleNote = ({ noteId }: { noteId: string }) => {
                     <div className="h-full w-full grid grid-rows-2">
                         <p className="h-full text-center">{noteDate}</p>
                         <p className="h-full grid grid-cols-2 text-center">
-                            {note.type.includes("income") ? "+" : "-"}{" "}
-                            {note.amount} {note.currency}
-                            <span>{note.description}</span>
+                            <span
+                                className={
+                                    note.type.includes("income")
+                                        ? "text-green-600"
+                                        : "text-red-600"
+                                }
+                            >
+                                {note.type.includes("income") ? "+" : "-"}{" "}
+                                {note.amount} {note.currency}
+                            </span>
+
+                            <span>
+                                <Description content={note.description!} />
+                            </span>
                         </p>
                     </div>
                 </div>

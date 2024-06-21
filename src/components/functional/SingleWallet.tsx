@@ -3,10 +3,13 @@ import { WalletProps } from "src/types";
 import { Button } from "../ui/button";
 import { Get } from "src/api/Requests";
 import { useWallet } from "src/stores/WalletStore";
+import Description from "../ui/Description";
 
 const SingleWallet = ({ walletId }: { walletId: string }) => {
     const [wallet, setWallet] = useState<WalletProps>();
     const setCurrentWallet = useWallet((state) => state.setCurrentWallet);
+    const setIsEdittingWallet = useWallet((state) => state.setIsEdittingWallet);
+    const hasEdittedWallet = useWallet((state) => state.hasEdittedWallet);
 
     const fetchWallet = useCallback(async () => {
         const fetchedWallet = await Get<WalletProps>(
@@ -22,7 +25,7 @@ const SingleWallet = ({ walletId }: { walletId: string }) => {
 
     useEffect(() => {
         fetchWallet();
-    }, [fetchWallet]);
+    }, [fetchWallet, hasEdittedWallet]);
 
     if (!wallet) return <></>;
 
@@ -32,7 +35,9 @@ const SingleWallet = ({ walletId }: { walletId: string }) => {
                 className="h-full col-span-10 bg-transparent border-black border justify-start place-content-center p-0"
                 variant={"outline"}
                 onClick={() => {
+                    setIsEdittingWallet(false);
                     setCurrentWallet(wallet);
+                    setIsEdittingWallet(true);
                 }}
             >
                 <img
@@ -44,7 +49,6 @@ const SingleWallet = ({ walletId }: { walletId: string }) => {
                 <div className="col-span-8 self-center w-full h-full">
                     <div className="h-full w-full grid grid-rows-2">
                         <div className="flex justify-around items-center text-lg">
-                            <p>{wallet.name}</p>
                             <p
                                 className={
                                     wallet.balance >= 0
@@ -54,10 +58,10 @@ const SingleWallet = ({ walletId }: { walletId: string }) => {
                             >
                                 {wallet.balance}
                             </p>
+                            <p>{wallet.name}</p>
                         </div>
-                    </div>
-                    <div>
-                        <p className="text-base">{wallet.description}</p>
+
+                        <Description content={wallet.description!} />
                     </div>
                 </div>
             </Button>
