@@ -57,7 +57,6 @@ const NoteForm = ({ noteDetail }: { noteDetail?: NoteProps | undefined }) => {
         const wallet = walletInfos.find((wallet) => wallet.id === walletId);
         if (!wallet) {
             console.log("Wallet not found");
-            return;
         }
         return wallet;
     };
@@ -101,10 +100,13 @@ const NoteForm = ({ noteDetail }: { noteDetail?: NoteProps | undefined }) => {
     });
 
     const deleteNote = useCallback(async () => {
-        await Delete(`note/delete/${noteDetail?.id}`);
+        if (!noteDetail) return;
+        await Delete(`note/delete/${noteDetail.id}`);
+
         setIsEditingNote(false);
         setIsCreatingNote(false);
         setHasEditedNote(!hasEditedNote);
+        setHasEdittedWallet(!hasEdittedWallet);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [noteDetail?.id]);
 
@@ -153,6 +155,7 @@ const NoteForm = ({ noteDetail }: { noteDetail?: NoteProps | undefined }) => {
                         updatedCurrentWallet
                     );
                 }
+                setHasEditedNote(!hasEditedNote);
                 return;
             }
             if (
@@ -209,22 +212,23 @@ const NoteForm = ({ noteDetail }: { noteDetail?: NoteProps | undefined }) => {
             if (newNote) {
                 setCurrentNote(newNote);
             }
-            const selectedWallet = findWallet(data.walletId);
-            if (!selectedWallet) return;
-            const newValue = currentType?.includes("income")
-                ? parseFloat(selectedWallet.balance.toString()) +
-                  parseFloat(data.amount.toString())
-                : parseFloat(selectedWallet.balance.toString()) -
-                  parseFloat(data.amount.toString());
-            const updatedWallet: Partial<WalletProps> = {
-                balance: newValue,
-            };
-            await Put<WalletProps>(
-                `wallet/update/${data.walletId}`,
-                updatedWallet
-            );
-        }
 
+            const selectedWallet = findWallet(data.walletId);
+            if (selectedWallet) {
+                const newValue = currentType?.includes("income")
+                    ? parseFloat(selectedWallet.balance.toString()) +
+                      parseFloat(data.amount.toString())
+                    : parseFloat(selectedWallet.balance.toString()) -
+                      parseFloat(data.amount.toString());
+                const updatedWallet: Partial<WalletProps> = {
+                    balance: newValue,
+                };
+                await Put<WalletProps>(
+                    `wallet/update/${data.walletId}`,
+                    updatedWallet
+                );
+            }
+        }
         setHasEditedNote(!hasEditedNote);
         setHasEdittedWallet(!hasEdittedWallet);
     };

@@ -6,12 +6,16 @@ import { useCategory } from "src/stores/CategoryStore";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Delete, Get } from "src/api/Requests";
 import Description from "../ui/Description";
+import { useWallet } from "src/stores/WalletStore";
 
 const SingleNote = ({ noteId }: { noteId: string }) => {
     const [note, setNote] = useState<NoteProps>();
     // re-render the component when the note is edited
     const hasEditedNote = useNote((state) => state.hasEditedNote);
     const setHasEditedNote = useNote((state) => state.setHasEditedNote);
+
+    const hasEdittedWallet = useWallet((state) => state.hasEdittedWallet);
+    const setHasEdittedWallet = useWallet((state) => state.setHasEdittedWallet);
 
     const fetchNote = useCallback(async () => {
         const response = await Get<NoteProps>(`note/getOne/${noteId}`);
@@ -28,6 +32,7 @@ const SingleNote = ({ noteId }: { noteId: string }) => {
 
     const setCurrentNote = useNote((state) => state.setCurrentNote);
     const setIsEditingNote = useNote((state) => state.setIsEditingNote);
+
     const noteDate: string = note
         ? new Date(note.date).toLocaleDateString()
         : "";
@@ -40,6 +45,7 @@ const SingleNote = ({ noteId }: { noteId: string }) => {
     const deleteNote = useCallback(async () => {
         await Delete(`note/delete/${noteId}`);
         setHasEditedNote(!hasEditedNote);
+        setHasEdittedWallet(!hasEdittedWallet);
         setIsEditingNote(false);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [noteId]);
