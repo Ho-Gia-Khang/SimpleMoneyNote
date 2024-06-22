@@ -5,6 +5,7 @@ import { logout } from "src/api/Requests";
 
 const LogoutButton = () => {
     const setLoggedIn = useLogin((state) => state.setIsLoggedIn);
+    const setIsLoggingIn = useLogin((state) => state.setIsLoggingIn);
     return (
         <Button
             variant={"outline"}
@@ -13,6 +14,7 @@ const LogoutButton = () => {
                 const status = await logout();
                 if (status === 200) {
                     setLoggedIn(false);
+                    setIsLoggingIn(true);
                 }
             }}
         >

@@ -24,6 +24,34 @@ export async function Get<T>(extendURL: string): Promise<T | undefined> {
     return data;
 }
 
+export async function register({
+    email,
+    password,
+    passwordConfirmation,
+}: {
+    email: string;
+    password: string;
+    passwordConfirmation: string;
+}): Promise<number | undefined> {
+    let status: number | undefined = undefined;
+    try {
+        await axios
+            .post(`${API_URL}user/create`, {
+                email: email,
+                password: password,
+                passwordConfirmation: passwordConfirmation,
+            })
+            .then((response) => {
+                if (response.status === 201) {
+                    status = response.status;
+                }
+            });
+    } catch (error) {
+        console.log(error);
+    }
+    return status;
+}
+
 export async function login({
     email,
     password,

@@ -18,53 +18,60 @@ import {
     FormLabel,
 } from "src/components/ui/form";
 import { Input } from "src/components/ui/input";
-import { login } from "src/api/Requests";
 import { useLogin } from "src/stores/LoginStore";
+import { register } from "src/api/Requests";
 
-const Login = () => {
-    const loginFormSchema = z.object({
-        email: z.string({ required_error: "Email is required" }).email(),
-        password: z.string({ required_error: "Password is required" }),
-    });
+const Register = () => {
+    const registerFormSchema = z
+        .object({
+            email: z.string({ required_error: "Email is required" }).email(),
+            password: z
+                .string({ required_error: "Password is required" })
+                .min(6, "Password must be at least 6 characters"),
+            passwordConfirmation: z.string({
+                required_error: "Password confirmation is required",
+            }),
+        })
+        .refine((data) => data.password === data.passwordConfirmation, {
+            message: "Passwords do not match",
+            path: ["passwordConfirmation"],
+        });
 
-    const loginForm = useForm<z.infer<typeof loginFormSchema>>({
-        resolver: zodResolver(loginFormSchema),
+    const registerForm = useForm<z.infer<typeof registerFormSchema>>({
+        resolver: zodResolver(registerFormSchema),
         defaultValues: {
             email: "",
             password: "",
+            passwordConfirmation: "",
         },
     });
 
-    const setLoggedIn = useLogin((state) => state.setIsLoggedIn);
-    const setIsLoggingIn = useLogin((state) => state.setIsLoggingIn);
-    const setIsRegistering = useLogin((state) => state.setIsRegistering);
-
-    const onSubmit = async (data: z.infer<typeof loginFormSchema>) => {
-        const response = await login({
+    const onSubmit = async (data: z.infer<typeof registerFormSchema>) => {
+        const response = await register({
             email: data.email,
             password: data.password,
+            passwordConfirmation: data.passwordConfirmation,
         });
 
         if (!response) {
-            console.log("Login failed");
+            console.log("Register failed");
             return;
         }
-        if (response === 200) {
-            setLoggedIn(true);
-            setIsLoggingIn(false);
-            setIsRegistering(false);
+        if (response === 201) {
+            useLogin.getState().setIsLoggingIn(true);
+            useLogin.getState().setIsRegistering(false);
         }
     };
     return (
-        <Form {...loginForm}>
-            <form onSubmit={loginForm.handleSubmit(onSubmit)}>
+        <Form {...registerForm}>
+            <form onSubmit={registerForm.handleSubmit(onSubmit)}>
                 <Card className="bg-transparent w-full h-full">
                     <CardHeader>
-                        <CardTitle>Login</CardTitle>
+                        <CardTitle>Registration</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <FormField
-                            control={loginForm.control}
+                            control={registerForm.control}
                             name="email"
                             render={({ field }) => (
                                 <FormItem>
@@ -80,7 +87,7 @@ const Login = () => {
                             )}
                         />
                         <FormField
-                            control={loginForm.control}
+                            control={registerForm.control}
                             name="password"
                             render={({ field }) => (
                                 <FormItem>
@@ -95,19 +102,35 @@ const Login = () => {
                                 </FormItem>
                             )}
                         />
+                        <FormField
+                            control={registerForm.control}
+                            name="passwordConfirmation"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Password Confirmation</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            type="password"
+                                            placeholder="password"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
                     </CardContent>
                     <CardFooter className="flex justify-between">
-                        <Button type="submit">Login</Button>
+                        <Button type="submit">Register</Button>
                         <Button
                             variant={"outline"}
                             type="button"
                             className="bg-transparent border border-black"
                             onClick={() => {
-                                useLogin.getState().setIsRegistering(true);
-                                useLogin.getState().setIsLoggingIn(false);
+                                useLogin.getState().setIsLoggingIn(true);
+                                useLogin.getState().setIsRegistering(false);
                             }}
                         >
-                            Register
+                            Back
                         </Button>
                     </CardFooter>
                 </Card>
@@ -116,4 +139,4 @@ const Login = () => {
     );
 };
 
-export default Login;
+export default Register;
